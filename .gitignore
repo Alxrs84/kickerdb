@@ -9,3 +9,4 @@ archive/
 .venv/
 __pycache__/
 autodownload/
+data/echtdaten_spieltage_1-12.csv
