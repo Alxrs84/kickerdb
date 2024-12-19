@@ -1,0 +1,11 @@
+vergleich.py
+fix_spieltage.py
+import_kicker_data1-12.py
+update_spieltage_1_12.py
+update_docker.txt
+Dockerfile
+deployment.md
+archive/
+.venv/
+__pycache__/
+autodownload/

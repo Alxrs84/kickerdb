@@ -1,0 +1,16 @@
+0000000000000000000000000000000000000000 413572148a3ad9680bfa972b267c6ce22926becf Alex <alexander.reis84@gmail.com> 1734125153 +0100	commit (initial): First Commit, db, app, import-script working locally
+413572148a3ad9680bfa972b267c6ce22926becf 8ceb82ee708ff65aa246e9c0571c72e6f9e5e87a Alex <alexander.reis84@gmail.com> 1734125623 +0100	commit (amend): First Commit, db, app, import-script working locally
+8ceb82ee708ff65aa246e9c0571c72e6f9e5e87a 8ceb82ee708ff65aa246e9c0571c72e6f9e5e87a Alex <alexander.reis84@gmail.com> 1734125865 +0100	checkout: moving from main to Feature--Automatischer-Import
+8ceb82ee708ff65aa246e9c0571c72e6f9e5e87a 8ceb82ee708ff65aa246e9c0571c72e6f9e5e87a Alex <alexander.reis84@gmail.com> 1734126786 +0100	checkout: moving from Feature--Automatischer-Import to main
+8ceb82ee708ff65aa246e9c0571c72e6f9e5e87a eee99275d096792c9f11f0a5a8d55f6985187d4c Alex <alexander.reis84@gmail.com> 1734452201 +0100	commit: Refactor database, app, importskript
+eee99275d096792c9f11f0a5a8d55f6985187d4c 7a7e15f25acb2ddbf2c3e8c2ac4e33bf2420c6be Alex <alexander.reis84@gmail.com> 1734452516 +0100	commit: aktualisierung readme
+7a7e15f25acb2ddbf2c3e8c2ac4e33bf2420c6be 8b589508f9775905dea1d973e6570ec43e655c97 Alex <alexander.reis84@gmail.com> 1734452700 +0100	commit: Aktualisierung Spielerdaten
+8b589508f9775905dea1d973e6570ec43e655c97 8b589508f9775905dea1d973e6570ec43e655c97 Alex <alexander.reis84@gmail.com> 1734452789 +0100	checkout: moving from main to 8b589508f9775905dea1d973e6570ec43e655c97
+8b589508f9775905dea1d973e6570ec43e655c97 8b589508f9775905dea1d973e6570ec43e655c97 Alex <alexander.reis84@gmail.com> 1734452794 +0100	checkout: moving from 8b589508f9775905dea1d973e6570ec43e655c97 to main
+8b589508f9775905dea1d973e6570ec43e655c97 33369ed6d3d1ee4742c5b390c4b17f15b33de4b7 Alex <alexander.reis84@gmail.com> 1734453290 +0100	commit: Tabelle Read Only
+33369ed6d3d1ee4742c5b390c4b17f15b33de4b7 a3d9dd391d1117426e81617881fce087b20ddfd8 Alex <alexander.reis84@gmail.com> 1734466190 +0100	commit: Gitignore
+a3d9dd391d1117426e81617881fce087b20ddfd8 280d0dfb40273ee034b46cfa59f843f4d39b628a Alex <alexander.reis84@gmail.com> 1734467535 +0100	commit: Ergänzung Doku
+280d0dfb40273ee034b46cfa59f843f4d39b628a ab4b2bb47a5f58afb1ffabe3d81a7a10f964afe1 Alex <alexander.reis84@gmail.com> 1734622304 +0100	commit: Erstellung Docker File
+ab4b2bb47a5f58afb1ffabe3d81a7a10f964afe1 43a54b15aa8b7c9342f7af8e33f02d07370a827e Alex <alexander.reis84@gmail.com> 1734640975 +0100	commit: move files
+43a54b15aa8b7c9342f7af8e33f02d07370a827e d4cbf5d41225daa2b6ffde176a9ff28f344b6429 Alex <alexander.reis84@gmail.com> 1734642088 +0100	commit: test
+d4cbf5d41225daa2b6ffde176a9ff28f344b6429 d4cbf5d41225daa2b6ffde176a9ff28f344b6429 Alex <alexander.reis84@gmail.com> 1734642219 +0100	checkout: moving from main to main
