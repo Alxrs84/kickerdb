@@ -1,6 +1,7 @@
 # Kicker Managerspiel Analyse
 
 Dieses Projekt bietet eine Streamlit-Webanwendung zur Analyse von Spielerdaten aus dem Kicker Managerspiel.
+Die App wird bei Streamlit unter der URL https://kickerdb.streamlit.app/ gehostet.
 
 ## Features
 
