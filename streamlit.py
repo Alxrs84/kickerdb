@@ -63,8 +63,8 @@ else:
 st.set_page_config(
     page_title="KickerDB - Spieler-Analyse",
     page_icon=":soccer:",
-    layout="wide",  # Oder "centered" für Mobilgeräte
-    initial_sidebar_state="collapsed"  # Sidebar standardmäßig ausblenden
+    layout="centered",  # Oder "centered" für Mobilgeräte
+    initial_sidebar_state="auto"  # Sidebar standardmäßig ausblenden
 )
 
 # Hauptfunktionalität der Streamlit-App
