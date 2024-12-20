@@ -175,11 +175,11 @@ else:
 
 # Copyright-Informationen anzeigen
 
-```python
+
 st.markdown("---")
 st.text("Datenquelle: kicker.de")
 st.markdown("App entwickelt von @Alxrs84 (https://github.com/Alxrs84/kickerdb)") 
-```
+
 
 # Verbindung schließen
 conn.close()
