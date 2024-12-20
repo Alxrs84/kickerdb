@@ -28,7 +28,6 @@ Das Projekt kann auch als Docker Container ausgeführt werden:
 
 Beiträge sind willkommen! Bitte erstelle ein Issue oder einen Pull Request.
 
-## Lizenz
 
 ## Lizenz
 
