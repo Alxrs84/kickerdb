@@ -1,23 +1,26 @@
 import sqlite3
-import pandas as pd
-import streamlit as st
+
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
-import matplotlib.colors as mcolors
+import pandas as pd
+import streamlit as st
 
 # Datenbankverbindung herstellen
 DB_PATH = "kicker-data.sqlite"
 conn = sqlite3.connect(DB_PATH)
 
 # Funktion, um Daten aus der Datenbank zu laden
+
 def load_data():
     """
     Lädt die Spieler- und Punktedaten aus der SQLite-Datenbank.
     Führt eine SQL-Abfrage aus, die Daten aus den Tabellen `player_points`, `players` und `matchdays` kombiniert.
     Gibt die abgerufenen Daten als Pandas DataFrame zurück.
-    
+
     Returns:
         pd.DataFrame: Ein DataFrame mit den Spalten:
+
             - player_id: Eindeutige Spieler-ID
             - name: Spielername
             - club: Aktueller Verein
@@ -28,14 +31,14 @@ def load_data():
             - matchday: Spieltagsnummer
     """
     query = """
-    SELECT 
-        pp.player_id AS player_id, 
-        pl.name_kurz AS name, 
-        pl.verein AS club, 
+    SELECT
+        pp.player_id AS player_id,
+        pl.name_kurz AS name,
+        pl.verein AS club,
         pl.position AS position,
-        pl.marktwert AS market_value, 
-        pp.gesamtpunkte AS total_points, 
-        pp.spieltagspunkte AS matchday_points, 
+        pl.marktwert AS market_value,
+        pp.gesamtpunkte AS total_points,
+        pp.spieltagspunkte AS matchday_points,
         m.spieltag AS matchday
     FROM player_points pp
     JOIN players pl ON pp.player_id = pl.id
@@ -56,6 +59,14 @@ if not data.empty:
 else:
     st.warning("Die Datenbank enthält keine Daten oder die Abfrage lieferte keine Ergebnisse.")
 
+# Streamlit-Konfiguration für Mobilgeräte
+st.set_page_config(
+    page_title="Kicker Managerspiel: Spieler-Analyse",
+    page_icon=":soccer:",
+    layout="wide",  # Oder "centered" für Mobilgeräte
+    initial_sidebar_state="collapsed"  # Sidebar standardmäßig ausblenden
+)
+
 # Hauptfunktionalität der Streamlit-App
 # Diese App visualisiert Spielerstatistiken aus dem Kicker Managerspiel
 # Es bietet Filtermöglichkeiten und die Möglichkeit, Spieler zu vergleichen
@@ -69,7 +80,8 @@ st.sidebar.header("Filter")
 selected_club = st.sidebar.selectbox("Verein", ["Alle"] + sorted(data['club'].unique()))
 selected_position = st.sidebar.selectbox("Position", ["Alle"] + sorted(data['position'].unique()))
 selected_min_points = st.sidebar.slider("Minimale Punkte", min_value=0, max_value=int(data['total_points'].max()), value=0)
-selected_market_value = st.sidebar.slider("Marktwert", min_value=0, max_value=int(data['market_value'].max()), value=(0, int(data['market_value'].max())), step=100000)
+selected_market_value = st.sidebar.slider("Marktwert", min_value=0, max_value=int(data['market_value'].max()),
+                                        value=(0, int(data['market_value'].max())), step=100000)
 
 # Daten filtern
 filtered_data = data.copy()
@@ -98,7 +110,8 @@ if not latest_data.empty:
         'points_per_million': 'Punkte/Mio'
     })
     latest_data_display['Punkte/Mio'] = latest_data_display['Punkte/Mio'].round(1)
-    st.dataframe(latest_data_display[['Position', 'Name', 'Verein', 'Marktwert', 'Gesamtpunkte', 'Punkte/Mio']], hide_index=True, height=400)
+    st.dataframe(latest_data_display[['Position', 'Name', 'Verein', 'Marktwert', 'Gesamtpunkte', 'Punkte/Mio']],
+                 hide_index=True, height=400)
 else:
     st.warning("Keine Daten entsprechen den ausgewählten Filtern.")
 
@@ -139,20 +152,21 @@ if selected_players:
 
                 # Linie für Punkte pro Million
                 if show_line_chart:
-                    ax.plot(player_data['matchday'], player_data['points_per_million'], 
+                    ax.plot(player_data['matchday'], player_data['points_per_million'],
                             label=f'{player} - Punkte pro Million Euro', color=base_color, marker='o')
                 # Balkendiagramm für Spieltagspunkte (nebeneinander)
                 if show_bar_chart:
-                    ax.bar(player_data['matchday'] + i * width, player_data['matchday_points'], 
+                    ax.bar(player_data['matchday'] + i * width, player_data['matchday_points'],
                            width=width, label=f'{player} - Punkte je Spieltag', color=bar_color)
 
         # Achsen anpassen für nebeneinanderliegende Balken
         ax.set_xticks(np.array(all_matchdays) + width * (len(selected_players) - 1) / 2)
         ax.set_xticklabels(all_matchdays)
-        
+
         # Legende hinzufügen, falls Diagramme aktiv sind
         ax.legend()
         fig.tight_layout()
+
         st.pyplot(fig)
     else:
         st.info("Aktiviere mindestens eines der Diagramme, um die Visualisierung anzuzeigen.")
