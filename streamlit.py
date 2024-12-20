@@ -61,7 +61,7 @@ else:
 
 # Streamlit-Konfiguration für Mobilgeräte
 st.set_page_config(
-    page_title="Kicker Managerspiel: Spieler-Analyse",
+    page_title="KickerDB - Spieler-Analyse",
     page_icon=":soccer:",
     layout="wide",  # Oder "centered" für Mobilgeräte
     initial_sidebar_state="collapsed"  # Sidebar standardmäßig ausblenden
@@ -73,7 +73,7 @@ st.set_page_config(
 # Die Statistiken umfassen Punkte pro Spieltag, Gesamtpunkte und Effizienz (Punkte pro Million Euro Marktwert)
 
 # Streamlit-UI
-st.title("Kicker Managerspiel: Spieler-Analyse")
+st.title("KickerDB - Spieler-Analyse")
 st.sidebar.header("Filter")
 
 # Filteroptionen
@@ -116,7 +116,7 @@ else:
     st.warning("Keine Daten entsprechen den ausgewählten Filtern.")
 
 # Eingabefeld für die Spielerauswahl
-st.header("Punkte pro Million Euro Marktwert")
+st.header("Spielervergleich")
 selected_players = st.multiselect(
     "Wähle Spieler für den Vergleich aus:",
     options=latest_data_display['Name'].unique(),
