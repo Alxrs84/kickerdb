@@ -174,8 +174,12 @@ else:
     st.info("Bitte wähle Spieler über das Eingabefeld aus, um den Plot anzuzeigen.")
 
 # Copyright-Informationen anzeigen
+
+```python
 st.markdown("---")
-st.text("© 2024 Kicker Managerspiel Analyse. Alle Rechte vorbehalten.")
+st.text("Datenquelle: kicker.de")
+st.markdown("App entwickelt von @Alxrs84 (https://github.com/Alxrs84/kickerdb)") 
+```
 
 # Verbindung schließen
 conn.close()
