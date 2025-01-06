@@ -2,12 +2,12 @@ import sqlite3
 import csv
 
 DB_PATH = "kicker-data.sqlite"
-CSV_PATH = "autodownload/data_2024-12-23_10-17-03.csv"  # CSV während der Transferphase
+CSV_PATH = "autodownload/data_2025-01-05_10-17-03.csv"  # CSV während der Transferphase
 
 # Datum und Spieltag (nur wenn es tatsächlich einen neuen Spieltag gibt)
 # Wenn Sie noch nicht wissen, ob Sie einen neuen Spieltag anlegen, können Sie diesen Wert dynamisch festlegen oder weglassen
-SPIELTAG_NUM = 15
-SPIELTAG_DATUM = "2024-12-22 10:17:02"  # Beispiel
+#SPIELTAG_NUM = 15
+#SPIELTAG_DATUM = "2024-12-22 10:17:02"  # Beispiel
 
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
