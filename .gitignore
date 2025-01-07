@@ -10,3 +10,4 @@ archive/
 __pycache__/
 autodownload/
 data/echtdaten_spieltage_1-12.csv
+vergleich_neu.py
