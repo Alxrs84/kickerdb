@@ -1,8 +1,8 @@
 import pandas as pd
 
 # CSV-Dateien laden mit korrektem Separator
-original_file = "autodownload/data_2024-12-23_10-17-03.csv"  # Ursprungsdatenstand
-updated_file = "autodownload/data_2025-01-05_10-17-03.csv"   # Veränderte Daten
+original_file = "autodownload/data_2025-01-07_10-17-02.csv"  # Ursprungsdatenstand
+updated_file = "autodownload/data_2025-01-07_13-17-02.csv"   # Veränderte Daten
 
 # CSV-Dateien einlesen und sicherstellen, dass sie semicolon-getrennt sind
 df_original = pd.read_csv(original_file, sep=';')
