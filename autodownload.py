@@ -4,8 +4,8 @@ import os
 from datetime import datetime
 
 # Konfiguration
-url = "https://www.kicker-libero.de/api/sportsdata/v1/players-details/se-k00012024.csv"
-download_dir = "/volume2/homes/Alex/Drive/PythonProjects/kickerdb/autodownload"
+url = "https://www.kicker-libero.de/api/sportsdata/v1/players-details/se-k00012025.csv" 
+download_dir = "/volume2/Austauschordner/python/kickerdb/autodownload"
 hash_file = os.path.join(download_dir, "last_hash.txt")
 
 def download_file(url, temp_path):

@@ -1,110 +1,208 @@
-# Dokumentation zum Import-Skript und zur Datenbankstruktur
+Dokumentation: Kicker Managerspiel Datenprojekt
+1. Übersicht
+Dieses Projekt dient der automatisierten Erfassung, Speicherung und Analyse von Spielerdaten des Kicker Managerspiels über mehrere Saisons hinweg. Das Kernstück ist eine robuste SQLite-Datenbank, die für historische Auswertungen optimiert ist, sowie ein Python-Skript, das die Daten aus den offiziellen CSV-Dateien importiert und verarbeitet.
 
-## Übersicht
+Das Ziel ist es, eine saubere und zuverlässige Datenbasis für detaillierte Analysen und Visualisierungen (z.B. mit Streamlit) zu schaffen, um Spielerleistungen, Marktwertentwicklungen und Team-Zusammensetzungen über die Zeit zu verfolgen.
 
-Dieses Skript dient dem Import von CSV-Daten aus dem Kicker-Managerspiel in eine SQLite-Datenbank. Es verarbeitet sowohl normale Spieltag-Updates (bei denen sich die Gesamtpunkte der Spieler ändern) als auch reine Änderungen während der Wintertransferperiode (bei denen keine neuen Punkte hinzukommen, Spieler aber ihren Verein oder ihre Position wechseln).
+2. Das Import-Skript (import_kicker_data_saisonübergreifend.py)
+Das Skript ist die zentrale Komponente zur Datenverarbeitung. Es ist so konzipiert, dass es die Datenbank sicher und intelligent aktualisiert.
 
-## Hauptfunktionen des Skripts
+Hauptfunktionen
+Saison-Management: Das Skript arbeitet saisonbasiert. Über die Variable CURRENT_SEASON_NAME wird festgelegt, für welche Saison die Daten verarbeitet werden. Neue Saisons werden automatisch in der Datenbank angelegt.
 
-1. **CSV-Import**:  
-   Das Skript liest eine CSV-Datei ein, in der folgende Daten zu den Spielern enthalten sind:
-   - ID (eindeutige Spieler-ID)
-   - Vorname, Nachname, Kurzname, Langname
-   - Verein, Position
-   - Marktwert (konstante Größe)
-   - Gesamtpunkte (kumuliert bis zum aktuellen Zeitpunkt)
+Zwei-Modi-Betrieb: Das Skript kann in zwei Modi ausgeführt werden, gesteuert über die Variable PROCESS_GAME_DAY_NUMBER:
 
-2. **Datenbank-Operationen**:  
-   Die eingelesenen Daten werden in einer SQLite-Datenbank (`kicker-data.sqlite`) gespeichert.  
-   - `players`: Stammdaten der Spieler
-   - `matchdays`: Informationen zu den Spieltagen
-   - `player_points`: Punkte der Spieler pro Spieltag
+Pre-Saison / Transfer-Modus (PROCESS_GAME_DAY_NUMBER = None): In diesem Modus werden nur die Spieler-Stammdaten aktualisiert. Dies ist ideal für die Zeit zwischen den Spieltagen oder vor Saisonbeginn, um Vereinswechsel, neue Spieler oder Abgänge zu erfassen. Es werden keine Punkte berechnet.
 
-3. **Unterscheidung neuer Spieltag vs. reine Transfer-Updates**:  
-   Das Skript prüft, ob sich die Gesamtpunkte im Vergleich zum letzten bekannten Stand verändert haben:
-   - **Veränderte Gesamtpunkte**: Neuer Spieltag wird in `matchdays` angelegt (falls nicht vorhanden), und für alle Spieler werden neue Einträge in `player_points` geschrieben.
-   - **Unveränderte Gesamtpunkte**: Kein neuer Spieltag. Es werden nur Vereins- und Positionswechsel (sowie etwaige Namensänderungen) in `players` aktualisiert. Keine neuen Einträge in `matchdays` oder `player_points`.
+Spieltags-Modus (PROCESS_GAME_DAY_NUMBER = 1, 2, etc.): In diesem Modus werden zusätzlich zu den Stammdaten die Punkte für den angegebenen Spieltag berechnet. Das Skript ermittelt die Punktedifferenz zum vorherigen Spieltag und speichert diese als Spieltagspunkte.
 
-## Datenbankstruktur
+Aktiv/Inaktiv-Logik: Um "Karteileichen" zu vermeiden, werden vor jeder Aktualisierung alle Spieler der aktuellen Saison als inaktiv markiert. Nur die Spieler, die in der neuesten CSV-Datei enthalten sind, werden anschließend wieder als aktiv markiert. So spiegelt die Datenbank immer den exakten, aktuellen Kader der Bundesliga wider.
 
-### Tabelle `players`
+Datensicherheit ("Atomic Write"): Um eine Beschädigung der Datenbank zu verhindern, arbeitet das Skript nach dem "Alles-oder-Nichts"-Prinzip. Alle Änderungen werden auf einer temporären Kopie der Datenbank durchgeführt. Nur wenn der gesamte Prozess fehlerfrei verläuft, wird die Original-Datenbank durch die aktualisierte Kopie ersetzt. Bei einem Fehler bleibt die Original-Datenbank unberührt.
 
-**Aufgabe**: Speicherung der Stammdaten eines Spielers. Änderungen an Verein oder Position werden immer auf den neuesten Stand gebracht, es erfolgt keine Historisierung.
+3. Datenbankstruktur (kicker_main.db)
+Die Datenbank ist auf eine saisonübergreifende, normalisierte Struktur ausgelegt, um Datenredundanz zu vermeiden und komplexe Abfragen zu ermöglichen.
 
-| Spalte    | Typ    | Beschreibung                                |
-|-----------|---------|---------------------------------------------|
-| id        | TEXT PK | Eindeutige Spieler-ID (z. B. `pl-k00030669`)|
-| vorname   | TEXT    | Vorname des Spielers                        |
-| nachname  | TEXT    | Nachname des Spielers                       |
-| name_kurz | TEXT    | Kurzer Anzeigename                          |
-| name_lang | TEXT    | Langer Anzeigename                          |
-| verein    | TEXT    | Aktueller Verein                            |
-| position  | TEXT    | Aktuelle Position                           |
-| marktwert | INTEGER | Marktwert des Spielers                      |
+Tabelle players
+Aufgabe: Speichert absolut unveränderliche Spielerdaten.
 
-### Tabelle `matchdays`
+Spalte
 
-**Aufgabe**: Speicherung von Spieltagen oder Datenständen, an denen neue Punkte erfasst wurden.
+Typ
 
-| Spalte       | Typ        | Beschreibung                                         |
-|--------------|------------|------------------------------------------------------|
-| id           | INTEGER PK | Eindeutige ID (Autoincrement)                       |
-| spieltag     | INTEGER    | Spieltagnummer                                      |
-| datum_import | TEXT       | Datum/Zeit des Imports (Format `YYYY-MM-DD HH:MM:SS`)|
+Beschreibung
 
-### Tabelle `player_points`
+player_id
 
-**Aufgabe**: Speicherung der Punkte pro Spieler und Spieltag. Neben dem Gesamtpunktestand wird auch die Punktedifferenz (Spieltagspunkte) zum vorherigen Spieltag hinterlegt.
+TEXT PK
 
-| Spalte         | Typ    | Beschreibung                                                  |
-|----------------|---------|--------------------------------------------------------------|
-| player_id      | TEXT   | Referenz auf `players.id`                                    |
-| matchday_id    | INTEGER| Referenz auf `matchdays.id`                                   |
-| gesamtpunkte    | REAL   | Gesamtpunktestand des Spielers zum Zeitpunkt des Spieltags   |
-| spieltagspunkte | REAL   | Differenz zum vorherigen Gesamtpunktestand                   |
+Eindeutige Kicker-ID (z.B. pl-k00030669)
 
-**Primärschlüssel**:  
-`(player_id, matchday_id)`
+first_name
 
-## Prozessablauf im Skript
+TEXT
 
-1. **Initialisierung**:  
-   - Datenbank verbinden
-   - Tabellen erstellen (falls nicht vorhanden)
-   
-2. **CSV-Daten einlesen**:  
-   - CSV mittels `csv.DictReader` parsen
-   - Temporäres Speichern der Spielerinformationen in einer Liste von Dictionaries
+Vorname des Spielers
 
-3. **Prüfen, ob ein neuer Spieltag vorliegt**:  
-   - Letzte bekannte Gesamtpunkte pro Spieler abfragen
-   - Wenn für mindestens einen Spieler eine Punktedifferenz gefunden wird → neuer Spieltag
-   - Wenn keine Differenz → kein neuer Spieltag
+last_name
 
-4. **Eintragen/Updaten in der Datenbank**:
-   - **Neuer Spieltag**:  
-     - Eintrag in `matchdays` erstellen (falls noch nicht vorhanden)  
-     - Für jeden Spieler Gesamtpunkte und Spieltagspunkte in `player_points` speichern  
-     - Spieler in `players` einfügen oder aktualisieren
-     
-   - **Kein neuer Spieltag**:  
-     - Nur `players` aktualisieren (um Vereins-/Positionswechsel zu berücksichtigen)
+TEXT
 
-5. **Abschluss**:  
-   - Änderungen mit `commit()` bestätigen
-   - Datenbankverbindung schließen
+Nachname des Spielers
 
-## Verwendung für grafische Auswertungen (z. B. mit Streamlit)
+Tabelle seasons
+Aufgabe: Definiert die verschiedenen Saisons.
 
-Mit dieser Datenbankstruktur kannst du in Streamlit verschiedene Auswertungen vornehmen:
+Spalte
 
-- **Punktverlauf eines einzelnen Spielers**:  
-  Über `player_points` kann pro Spieltag der Gesamtpunkteverlauf und die erzielten Spieltagspunkte eines Spielers dargestellt werden.
+Typ
 
-- **Vergleich von Spielern**:  
-  Durchschnittliche Punkte, Top-Scorer, Vergleich von Marktwerten oder Vereinen – all dies lässt sich leicht mit SQL-Abfragen umsetzen.
+Beschreibung
 
-- **Vereins- oder Positionsanalyse**:  
-  Da in `players` immer der aktuelle Verein und die aktuelle Position gespeichert sind, lassen sich rasch Übersichten erstellen (z. B. wie viele Stürmer oder wie viele Spieler von Verein X zum aktuellen Zeitpunkt vorhanden sind).
+season_id
 
-Durch die klare Struktur werden die Auswertungen in Streamlit sehr einfach: SQL-Abfragen liefern die notwendigen Daten, die dann mit Pandas-DataFrames visualisiert und in Streamlit als Diagramme (Line-Charts, Bar-Charts, Pie-Charts) ausgegeben werden können.
+INTEGER PK
+
+Eindeutige ID (Autoincrement)
+
+season_name
+
+TEXT
+
+Name der Saison (z.B. "2024/2025")
+
+Tabelle player_seasonal_details
+Aufgabe: Die zentrale Verknüpfungstabelle. Sie speichert alle Daten eines Spielers, die für eine bestimmte Saison gültig sind.
+
+Spalte
+
+Typ
+
+Beschreibung
+
+id
+
+INTEGER PK
+
+Eindeutige ID (Autoincrement)
+
+player_id
+
+TEXT FK
+
+Referenz auf players.player_id
+
+season_id
+
+INTEGER FK
+
+Referenz auf seasons.season_id
+
+club
+
+TEXT
+
+Der Verein des Spielers in dieser Saison
+
+position
+
+TEXT
+
+Die Position des Spielers in dieser Saison
+
+market_value
+
+INTEGER
+
+Der Marktwert des Spielers für diese Saison
+
+is_active
+
+INTEGER
+
+Status (1 = aktiv in der Liga, 0 = inaktiv/verlassen)
+
+Tabelle game_days
+Aufgabe: Definiert die einzelnen Spieltage und ordnet sie einer Saison zu.
+
+Spalte
+
+Typ
+
+Beschreibung
+
+game_day_id
+
+INTEGER PK
+
+Eindeutige ID
+
+season_id
+
+INTEGER FK
+
+Referenz auf seasons.season_id
+
+game_day_number
+
+INTEGER
+
+Die Nummer des Spieltags (1-34)
+
+Tabelle player_stats
+Aufgabe: Speichert die Leistung eines Spielers an einem konkreten Spieltag.
+
+Spalte
+
+Typ
+
+Beschreibung
+
+stat_id
+
+INTEGER PK
+
+Eindeutige ID (Autoincrement)
+
+player_seasonal_details_id
+
+INTEGER FK
+
+Referenz auf player_seasonal_details.id
+
+game_day_id
+
+INTEGER FK
+
+Referenz auf game_days.game_day_id
+
+points
+
+INTEGER
+
+Die an diesem Spieltag erzielten Punkte
+
+grade
+
+REAL
+
+Die an diesem Spieltag erhaltene Note
+
+gesamtpunkte
+
+REAL
+
+Der kumulierte Gesamtpunktestand nach diesem Spieltag
+
+4. Verwendung für Auswertungen (z.B. mit Streamlit)
+Diese Struktur ermöglicht komplexe und interessante Analysen:
+
+Marktwertentwicklung: Vergleiche den Marktwert eines Spielers über mehrere Saisons hinweg.
+
+Leistungsvergleich: Analysiere, ob ein Spieler nach einem Vereinswechsel besser oder schlechter punktet.
+
+Effizienz-Analyse: Berechne die Effizienz (Punkte pro Mio. € Marktwert) für jede Saison und identifiziere konstante "Schnäppchen".
+
+Team-Analyse: Zeige den kompletten, aktiven Kader eines Vereins für eine beliebige Saison an.
+
+Durch SQL-JOIN-Abfragen über die Tabellen können alle diese Informationen einfach verknüpft und in Streamlit als interaktive Diagramme und Tabellen dargestellt werden.
