@@ -9,7 +9,6 @@ from itertools import combinations
 st.set_page_config(
     page_title="KickerDB Analyse",
     page_icon="⚽",
-    layout="wide",
 )
 
 # Dateipfad zur Datenbank
@@ -300,11 +299,13 @@ def get_best_team(player_data, formation_counts, kader_size, budget_limit):
 
 st.title("⚽ KickerDB Analyse-App")
 
-st.markdown("""
-    Diese App dient der Analyse von Spielerdaten aus der deutschen Fußball-Bundesliga. 
-    Wähle links in der Seitenleiste zwischen den Analyse-Seiten.
-    ---
-""")
+# Übersetzung der Positionen
+position_translation = {
+    'GOALKEEPER': 'Torwart',
+    'DEFENDER': 'Abwehr',
+    'MIDFIELDER': 'Mittelfeld',
+    'FORWARD': 'Sturm'
+}
 
 # Seitenleiste
 st.sidebar.title("App-Navigation")
@@ -328,8 +329,10 @@ if page == "Saison-Analyse":
         all_clubs = ['Alle'] + get_unique_values(seasonal_data, 'club')
         selected_club = st.sidebar.selectbox("Verein", all_clubs)
         
-        all_positions = ['Alle'] + get_unique_values(seasonal_data, 'position')
-        selected_position = st.sidebar.selectbox("Position", all_positions)
+        # Positionen für Filter übersetzen
+        seasonal_data['position_german'] = seasonal_data['position'].map(position_translation)
+        all_positions = ['Alle'] + get_unique_values(seasonal_data, 'position_german')
+        selected_position_german = st.sidebar.selectbox("Position", all_positions)
         
         min_points_filter = st.sidebar.slider("Minimale Gesamtpunkte", 
                                               int(seasonal_data['points'].min()) if not seasonal_data.empty else 0, 
@@ -347,8 +350,8 @@ if page == "Saison-Analyse":
         filtered_data = seasonal_data.copy()
         if selected_club != 'Alle':
             filtered_data = filtered_data[filtered_data['club'] == selected_club]
-        if selected_position != 'Alle':
-            filtered_data = filtered_data[filtered_data['position'] == selected_position]
+        if selected_position_german != 'Alle':
+            filtered_data = filtered_data[filtered_data['position_german'] == selected_position_german]
         
         filtered_data = filtered_data[filtered_data['points'] >= min_points_filter]
         filtered_data = filtered_data[
@@ -358,14 +361,14 @@ if page == "Saison-Analyse":
 
         if not filtered_data.empty:
             display_data = filtered_data.rename(columns={
-                'player_name': 'Spieler', 'club': 'Verein', 'position': 'Position',
+                'player_name': 'Spieler', 'club': 'Verein', 'position_german': 'Position',
                 'market_value_eur': 'Marktwert (€)', 'points': 'Gesamtpunkte',
                 'efficiency_points_per_mil': 'Effizienz (P/Mio.€)'
             })
             
             display_data['Marktwert (€)'] = display_data['Marktwert (€)'].apply(lambda x: f"{x:,.0f} €".replace(",", "."))
             st.subheader("Spieler-Übersicht")
-            st.dataframe(display_data.drop(columns=['player_id']), use_container_width=True, hide_index=True)
+            st.dataframe(display_data[['Spieler', 'Verein', 'Position', 'Marktwert (€)', 'Gesamtpunkte', 'Effizienz (P/Mio.€)']], use_container_width=True, hide_index=True)
         else:
             st.warning("Keine Spieler gefunden, die den Filterkriterien entsprechen.")
 
@@ -406,6 +409,7 @@ elif page == "Spieler-Analyse":
                     'season_name': 'Saison', 'club': 'Verein', 'position': 'Position',
                     'market_value_eur': 'Marktwert (€)', 'points': 'Gesamtpunkte'
                 })
+                display_df['Position'] = display_df['Position'].map(position_translation).fillna(display_df['Position'])
                 display_df['Marktwert (€)'] = display_df['Marktwert (€)'].apply(lambda x: f"{x:,.0f} €".replace(",", "."))
                 st.dataframe(display_df, use_container_width=True, hide_index=True)
             else:
@@ -471,6 +475,7 @@ elif page == "Bestes Team":
                         'player_name': 'Spieler', 'club': 'Verein', 'position': 'Position', 
                         'market_value_eur': 'Marktwert (€)', 'points': 'Punkte'
                     })
+                    playing_eleven_df['Position'] = playing_eleven_df['Position'].map(position_translation).fillna(playing_eleven_df['Position'])
                     playing_eleven_df['Marktwert (€)'] = playing_eleven_df['Marktwert (€)'].apply(lambda x: f"{x:,.0f} €".replace(",", "."))
                     st.dataframe(playing_eleven_df[['Spieler', 'Verein', 'Position', 'Punkte', 'Marktwert (€)']].sort_values('Punkte', ascending=False), 
                                  use_container_width=True, hide_index=True)
@@ -480,6 +485,7 @@ elif page == "Bestes Team":
                         'player_name': 'Spieler', 'club': 'Verein', 'position': 'Position', 
                         'market_value_eur': 'Marktwert (€)', 'points': 'Punkte'
                     })
+                    kader_df['Position'] = kader_df['Position'].map(position_translation).fillna(kader_df['Position'])
                     kader_df['Marktwert (€)'] = kader_df['Marktwert (€)'].apply(lambda x: f"{x:,.0f} €".replace(",", "."))
                     st.dataframe(kader_df[['Spieler', 'Verein', 'Position', 'Punkte', 'Marktwert (€)']].sort_values(['Punkte', 'Marktwert (€)'], ascending=False), 
                                  use_container_width=True, hide_index=True)
