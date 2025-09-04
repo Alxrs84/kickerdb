@@ -231,7 +231,6 @@ def get_best_team(player_data, formation_counts, kader_size, budget_limit):
 
     # Performance-Optimierung: Reduziere die Größe der Spieler-Pools
     PRUNING_LIMITS = {'GOALKEEPER': 8, 'DEFENDER': 8, 'MIDFIELDER': 8, 'FORWARD': 8}
-    st.sidebar.info("Performance-Hinweis: Es werden nur die Top-Spieler (nach Punkten) pro Position berücksichtigt.")
 
     for pos in positions.keys():
         pool = starter_pools[pos]
@@ -240,12 +239,8 @@ def get_best_team(player_data, formation_counts, kader_size, budget_limit):
             # Sortiere nach Punkten absteigend (primär) und Marktwert aufsteigend (sekundär)
             sorted_pool = sorted(pool, key=lambda x: (x.get('points', 0), -x.get('market_value_eur', 999999999)), reverse=True)
             starter_pools[pos] = sorted_pool[:limit]
-            st.sidebar.write(f"{pos}: Pool von {len(pool)} auf {len(starter_pools[pos])} reduziert.")
-        else:
-            st.sidebar.write(f"{pos}: Pool hat {len(pool)} Spieler.")
 
     budget_for_eleven = budget_limit - ersatzbank_value
-    st.info(f"Budget für Ersatzbank: {ersatzbank_value:,.0f} €. Verbleibendes Budget für Startelf: {budget_for_eleven:,.0f} €.")
 
     # Schritt 2: Beste Startelf per Dynamic Programming (Knapsack-Problem) finden
     dp = {0: (0.0, [])}
@@ -367,6 +362,12 @@ if page == "Saison-Analyse":
             })
             
             display_data['Marktwert (€)'] = display_data['Marktwert (€)'].apply(lambda x: f"{x:,.0f} €".replace(",", "."))
+            
+            # Sortierung nach Position
+            pos_order = ['Sturm', 'Mittelfeld', 'Abwehr', 'Torwart']
+            display_data['Position'] = pd.Categorical(display_data['Position'], categories=pos_order, ordered=True)
+            display_data = display_data.sort_values(by=['Position', 'Gesamtpunkte'], ascending=[True, False])
+
             st.subheader("Spieler-Übersicht")
             st.dataframe(display_data[['Spieler', 'Verein', 'Position', 'Marktwert (€)', 'Gesamtpunkte', 'Effizienz (P/Mio.€)']], use_container_width=True, hide_index=True)
         else:
@@ -400,22 +401,47 @@ elif page == "Spieler-Analyse":
 
     all_players_df = load_all_players_for_analysis()
     if not all_players_df.empty:
-        selected_player = st.selectbox("Wähle einen Spieler", all_players_df['player_name'].unique())
-        if selected_player:
-            player_overview_df = load_player_seasonal_overview(selected_player)
-            if not player_overview_df.empty:
-                st.subheader(f"Saisonale Übersicht für {selected_player}")
-                display_df = player_overview_df.rename(columns={
-                    'season_name': 'Saison', 'club': 'Verein', 'position': 'Position',
-                    'market_value_eur': 'Marktwert (€)', 'points': 'Gesamtpunkte'
-                })
-                display_df['Position'] = display_df['Position'].map(position_translation).fillna(display_df['Position'])
-                display_df['Marktwert (€)'] = display_df['Marktwert (€)'].apply(lambda x: f"{x:,.0f} €".replace(",", "."))
-                st.dataframe(display_df, use_container_width=True, hide_index=True)
-            else:
-                st.warning(f"Keine Daten für {selected_player} gefunden.")
+        st.sidebar.subheader("Spieler-Filter")
+
+        # Positionen für Filter übersetzen
+        all_players_df['position_german'] = all_players_df['position'].map(position_translation)
+        all_positions_player = ['Alle'] + get_unique_values(all_players_df, 'position_german')
+        selected_position_player_german = st.sidebar.selectbox("Position", all_positions_player)
+
+        # Verein-Filter
+        all_clubs_player = ['Alle'] + get_unique_values(all_players_df, 'club')
+        selected_club_player = st.sidebar.selectbox("Verein", all_clubs_player)
+
+        # Daten filtern
+        filtered_players_df = all_players_df.copy()
+        if selected_club_player != 'Alle':
+            filtered_players_df = filtered_players_df[filtered_players_df['club'] == selected_club_player]
+        if selected_position_player_german != 'Alle':
+            filtered_players_df = filtered_players_df[filtered_players_df['position_german'] == selected_position_player_german]
+
+        # Spieler-Auswahl basierend auf den Filtern
+        if not filtered_players_df.empty:
+            player_list = sorted(filtered_players_df['player_name'].unique().tolist())
+            selected_player = st.selectbox("Wähle einen Spieler", player_list)
+
+            if selected_player:
+                player_overview_df = load_player_seasonal_overview(selected_player)
+                if not player_overview_df.empty:
+                    st.subheader(f"Saisonale Übersicht für {selected_player}")
+                    display_df = player_overview_df.rename(columns={
+                        'season_name': 'Saison', 'club': 'Verein', 'position': 'Position',
+                        'market_value_eur': 'Marktwert (€)', 'points': 'Gesamtpunkte'
+                    })
+                    display_df['Position'] = display_df['Position'].map(position_translation).fillna(display_df['Position'])
+                    display_df['Marktwert (€)'] = display_df['Marktwert (€)'].apply(lambda x: f"{x:,.0f} €".replace(",", "."))
+                    st.dataframe(display_df, use_container_width=True, hide_index=True)
+                else:
+                    st.warning(f"Keine Daten für {selected_player} gefunden.")
+        else:
+            st.warning("Keine Spieler gefunden, die den Filterkriterien entsprechen.")
     else:
         st.error("Keine Spielerdaten zum Laden vorhanden.")
+
 
 # --- Seite: Bestes Team ---
 elif page == "Bestes Team":
@@ -477,8 +503,12 @@ elif page == "Bestes Team":
                     })
                     playing_eleven_df['Position'] = playing_eleven_df['Position'].map(position_translation).fillna(playing_eleven_df['Position'])
                     playing_eleven_df['Marktwert (€)'] = playing_eleven_df['Marktwert (€)'].apply(lambda x: f"{x:,.0f} €".replace(",", "."))
-                    st.dataframe(playing_eleven_df[['Spieler', 'Verein', 'Position', 'Punkte', 'Marktwert (€)']].sort_values('Punkte', ascending=False), 
-                                 use_container_width=True, hide_index=True)
+                    
+                    pos_order = ['Sturm', 'Mittelfeld', 'Abwehr', 'Torwart']
+                    playing_eleven_df['Position'] = pd.Categorical(playing_eleven_df['Position'], categories=pos_order, ordered=True)
+                    
+                    st.dataframe(playing_eleven_df[['Spieler', 'Verein', 'Position', 'Punkte', 'Marktwert (€)']].sort_values('Position'), 
+                                 use_container_width=True, hide_index=True, height=420)
                     
                     st.markdown("### Kompletter Kader (inkl. Ersatzbank)")
                     kader_df = best_team_result['team'].rename(columns={
@@ -487,7 +517,10 @@ elif page == "Bestes Team":
                     })
                     kader_df['Position'] = kader_df['Position'].map(position_translation).fillna(kader_df['Position'])
                     kader_df['Marktwert (€)'] = kader_df['Marktwert (€)'].apply(lambda x: f"{x:,.0f} €".replace(",", "."))
-                    st.dataframe(kader_df[['Spieler', 'Verein', 'Position', 'Punkte', 'Marktwert (€)']].sort_values(['Punkte', 'Marktwert (€)'], ascending=False), 
+                    
+                    kader_df['Position'] = pd.Categorical(kader_df['Position'], categories=pos_order, ordered=True)
+                    
+                    st.dataframe(kader_df[['Spieler', 'Verein', 'Position', 'Punkte', 'Marktwert (€)']].sort_values(['Position', 'Punkte'], ascending=[True, False]), 
                                  use_container_width=True, hide_index=True)
                 else:
                     st.error("Es konnte kein Team gefunden werden, das die Kriterien erfüllt.")
