@@ -11,7 +11,7 @@ CURRENT_SEASON_NAME = "2025/2026"
 
 # STEUERUNG: Gib hier die Spieltagsnummer an, die verarbeitet werden soll.
 # DIESES SKRIPT FUNKTIONIERT NUR, WENN HIER EINE ZAHL EINGETRAGEN IST.
-PROCESS_GAME_DAY_NUMBER = 6 # Beispiel: 1, 2, 3, ...
+PROCESS_GAME_DAY_NUMBER = 7 # Beispiel: 1, 2, 3, ...
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(SCRIPT_DIR, "kicker_main.db")
