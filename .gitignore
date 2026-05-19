@@ -26,3 +26,6 @@ update_docker.txt
 process_gameday/
 import/
 testfiles/
+
+# Claude Code deploy scripts (contain webhook secrets)
+.claude/deploy/
