@@ -1,0 +1,30 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3004:8501"
+    volumes:
+      - kickerdb_data:/app/db
+      - /mnt/nas/docker/kickerdb:/app/data
+    environment:
+      - KICKERDB_PATH=/app/db/kicker_main.db
+      - AUTODOWNLOAD_DIR=/app/data/autodownload
+      - SPIELTAG_SCHWELLWERT=700
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+
+  scheduler:
+    build: .
+    command: python pipeline/scheduler.py
+    volumes:
+      - kickerdb_data:/app/db
+      - /mnt/nas/docker/kickerdb:/app/data
+    environment:
+      - KICKERDB_PATH=/app/db/kicker_main.db
+      - AUTODOWNLOAD_DIR=/app/data/autodownload
+      - SPIELTAG_SCHWELLWERT=700
+      - LOG_LEVEL=INFO
+    restart: unless-stopped
+
+volumes:
+  kickerdb_data:
