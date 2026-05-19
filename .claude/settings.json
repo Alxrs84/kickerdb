@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sqlite3 kicker_main.db \"SELECT COUNT\\(*\\) as player_count FROM players; SELECT COUNT\\(*\\) as season_count FROM seasons; SELECT COUNT\\(*\\) as gameday_count FROM game_days; SELECT COUNT\\(*\\) as stats_count FROM player_stats;\")",
+      "Bash(sqlite3 kicker_main.db \"EXPLAIN QUERY PLAN SELECT p.player_id, p.first_name || ' ' || p.last_name AS player_name, psd.club FROM player_seasonal_details psd JOIN players p ON psd.player_id = p.player_id WHERE psd.season_id = 1 LIMIT 10;\")",
+      "Bash(sqlite3 kicker_main.db \".indexes\")",
+      "Bash(sqlite3 kicker_main.db \"SELECT sql FROM sqlite_master WHERE type='index'\")",
+      "Bash(sqlite3 kicker_main.db \"SELECT season_name FROM seasons ORDER BY season_name DESC LIMIT 5;\")",
+      "Bash(sqlite3 kicker_main.db \"EXPLAIN QUERY PLAN SELECT p.player_id, MAX\\(ps.gesamtpunkte\\) FROM players p JOIN player_seasonal_details psd ON psd.player_id = p.player_id JOIN player_stats ps ON psd.id = ps.player_seasonal_details_id WHERE psd.season_id = 1 GROUP BY psd.id;\")",
+      "Bash(sqlite3 kicker_main.db \"SELECT COUNT\\(*\\) as total_records, COUNT\\(DISTINCT player_id\\) as unique_players FROM player_stats ps;\")"
+    ]
+  }
+}

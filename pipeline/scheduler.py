@@ -24,7 +24,7 @@ logging.basicConfig(
 )
 log = logging.getLogger(__name__)
 
-POLL_INTERVAL = 600  # seconds between download attempts
+POLL_INTERVAL = 14400  # seconds between download attempts
 PYTHON = sys.executable
 BASE_DIR = Path(__file__).parent.parent
 
